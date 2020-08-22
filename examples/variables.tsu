@@ -1,0 +1,5 @@
+name = "charlotte"
+age = 19
+candrive = #t
+ismale = #f
+shouldbenil = nil

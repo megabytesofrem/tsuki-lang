@@ -1,0 +1,32 @@
+// Grammar for Tsuki
+start: func_call*
+
+// Data types. Tsuki supports strings, numbers, and arrays
+// as of now
+value: array
+     | identifier
+     | string
+     | SIGNED_NUMBER -> number
+     | "#t"          -> true
+     | "#f"          -> false
+     | "nil"         -> nil
+
+identifier: WORD 
+string: ESCAPED_STRING
+array: "[" [value ("," value)*] "]"
+
+// Variables are defined with the syntax name = value
+variable: identifier "=" value
+
+// Function calling
+func_param: value
+func_call: identifier "(" [func_param ("," func_param)*] ")"
+
+
+%import common.SIGNED_NUMBER
+%import common.ESCAPED_STRING
+%import common.WORD
+%import common.WS
+
+// Ignore all whitespace in the parser
+%ignore WS
