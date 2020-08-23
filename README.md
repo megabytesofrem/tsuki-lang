@@ -2,30 +2,35 @@
 A simple toy language written in Python using Lark. Tsuki is designed to be similar
 to Lua syntax wise, however much simpler.
 
-## Variables
+## Features
+- [x] Variables that map to Python representations
+- [x] Arrays, and tables (dictionaries)
+- [x] If statements
+- [x] Comments
+
+## Demo
 ```lua
--- Tsuki supports Lua style comments too!
+-- Hello world in Tsuki
+echo("Hello world")
 
--- name is a string in this case, a python str()
-name = "charlotte"
+-- Checking for conditions with if
+manesix = ["Twilight", "Rarity", "Fluttershy", "Applejack", "Rainbow Dash", "Pinkie Pie"]
+inwonderbolts = "true"
+if find(manesix, "Rainbow Dash") ~= "nil" and inwonderbolts == "true" then 
+    echo("Rainbow dash is in the Wonderbolts")
+end
 
--- we can assign a new variable to the value of a variable
-hername = name
-
--- age is an number, which maps to a python int()
-age = 19
-
--- manesix is an array of strings, which maps to a python list()
-manesix = ["Twilight", "Rarity", "Fluttershy", "Applejack", "Pinkie Pie", "Spike"]
-
--- ponies is a table, which maps to a python dict()
--- Tables will be used later on extensively for implementing a Lua style OOP
-ponies = {
-    "twilight" -> "alicorn",
-    "rarity" -> "unicorn",
-    "applejack" -> "earth"
+-- Tables are cool too!
+princesses = {
+    "Twilight" -> "is the princess of friendship",
+    "Celestia" -> "raises the sun",
+    "Luna"     -> "raises the moon"
 }
 
-echo(manesix)
-echo(ponies)
+echo("Celestia ")
+what = find(princesses, "Celestia")
+echo(what)
+
+-- ...and heres a single line if statement!
+if what ~= "raises the sun" then echo("Wrong pony") end
 ```
