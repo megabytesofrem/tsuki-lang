@@ -2,6 +2,7 @@ from lark import Transformer, Tree
 
 from nodes.expression import Expression
 from nodes.func_call import FuncCall
+from nodes.statement import IfStatement, VarAssign
 
 class TsukiTransform(Transformer):
     # Atoms
@@ -51,3 +52,18 @@ class TsukiTransform(Transformer):
                 values = list(i.children)
 
         return Expression(kind, values)
+
+    def var_assign(self, args):
+        name = args[0]
+        value = args[1]
+
+        return VarAssign(name, value)
+
+    def if_statement(self, args):
+        condition = args[0]
+        if_block = []
+
+        for statement in args[1:]:
+            if_block.append(statement)
+                
+        return IfStatement(condition, if_block)

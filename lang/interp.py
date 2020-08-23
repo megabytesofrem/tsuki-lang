@@ -1,10 +1,11 @@
-from lark.visitors import Interpreter
+from lark.visitors import Interpreter, visit_children_decor
 
 from transform import TsukiTransform
 from parser import TsukiParser
 
 from nodes.expression import Expression
 from nodes.func_call import FuncCall
+from nodes.statement import IfStatement, VarAssign
 
 import error
 
@@ -13,14 +14,15 @@ class TsukiInterp(Interpreter):
         super().__init__()
 
         self.parser = TsukiParser()
-        self.compare_success = False
+        self.running = True
         self.transformer = TsukiTransform()
         self.globals = {}
 
         self.builtin = {}
 
     def load_builtins(self):
-        self.builtin['echo'] = lambda x: print(x)
+        self.builtin['echo'] = lambda x: print(x, end=' ')
+        self.builtin['add']  = lambda x, y: print(x + y)
 
     def run(self, program):
         tree = self.parser.parse(program)
@@ -31,8 +33,9 @@ class TsukiInterp(Interpreter):
 
     def var_assign(self, tree):
         # All variables are global in Tsuki, since it is very simple
-        name = tree.children[0]
-        val = tree.children[1]
+        node = tree.children[0]
+        name = node.name
+        val = node.value
 
         # Looks complicated but if the "value" is actually a variable,
         # then use the value of the variable that it corresponds to
@@ -43,33 +46,44 @@ class TsukiInterp(Interpreter):
 
     def statement(self, tree):
         for child in tree.children:
-            if child.data == 'if_statement':
-                # The next child should be the comparison
-                comparison = child.children[0]
-                block = child.children[1:]
+            if type(child) == IfStatement:
+                condition = child.condition
+                block = child.if_block
 
-                (lvalue, rvalue) = comparison.values
-                if comparison.kind == 'comp_eq':
-                    if lvalue == rvalue:
-                        self.compare_success = True
-                    else:
-                        self.compare_success = False
-                elif comparison.kind == 'comp_neq':
-                    if lvalue != rvalue:
-                        self.compare_success = True
-                    else:
-                        self.compare_success = False
+                (a, b) = condition.values
+
+                # Substitute variables if they are used in the condition
+                if a in self.globals:
+                    a = self.globals[a]
+                if b in self.globals:
+                    b = self.globals[b]
+
+                if condition.kind == 'comp_eq':
+                    if a != b: 
+                        self.running = False
+                    self.running = True
+                elif condition.kind == 'comp_neq':
+                    if a == b: 
+                        self.running = False
+                    self.running = True
                 
-                if self.compare_success:
-                    # Run the block only if the comparison was successful
-                    for b in block:
-                        children = self.visit_children(b)
-                        for child in children:
-                            if type(child) == FuncCall:
-                                self.func_call(b)
+                #print(condition, block, a, b)
+
+                if self.running:
+                    # Evaluate each statement in the block
+                    self.visit_block(block)
+
+    def visit_block(self, block):
+        for statement in block:
+            for child in statement.children:
+                if isinstance(child, FuncCall):
+                    self.func_call(statement)
+                elif isinstance(child, VarAssign):
+                    self.var_assign(statement)
 
     def func_call(self, tree):
         node = tree.children[0]
+
         name = node.name
         params = []
 
@@ -87,6 +101,7 @@ class TsukiInterp(Interpreter):
                 self.builtin[name]()
         else:
             raise error.BuiltinNotFound(name)
+        
 
 interp = TsukiInterp()
 

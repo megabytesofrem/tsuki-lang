@@ -3,7 +3,18 @@
 --     echo("2 is == 2")
 -- end
 
-if 4 == 4 then echo("4 is definitely 4!") end
 if 2 == 2 then
-    echo("true")
+    valid = "true"
+    echo("valid is")
+    echo(valid)
+
+    valid = "false"
+    echo("now, valid is")
+    echo(valid)
 end
+
+name = "charlotte"
+if name == "charlotte" then
+    echo("hi there!")
+end
+
