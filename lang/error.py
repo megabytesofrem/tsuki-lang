@@ -1,0 +1,2 @@
+class BuiltinNotFound(Exception):
+    pass

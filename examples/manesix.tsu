@@ -1,0 +1,13 @@
+-- manesix is an array of strings, which maps to a python list()
+manesix = ["Twilight", "Rarity", "Fluttershy", "Applejack", "Pinkie Pie", "Spike"]
+ponies = {
+    "twilight" -> "alicorn",
+    "rarity" -> "unicorn",
+    "applejack" -> "earth"
+}
+
+echo("These are the mane six!")
+echo(manesix)
+
+echo("And here are all the ponies and their types!")
+echo(ponies)

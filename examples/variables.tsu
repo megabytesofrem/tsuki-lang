@@ -11,3 +11,7 @@ age = 19
 
 -- manesix is an array of strings, which maps to a python list()
 manesix = ["Twilight", "Rarity", "Fluttershy", "Applejack", "Pinkie Pie", "Spike"]
+
+-- test func call
+echo("hello world!")
+echo(manesix)

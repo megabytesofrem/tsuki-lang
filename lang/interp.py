@@ -3,6 +3,8 @@ from lark.visitors import Interpreter
 from transform import TsukiTransform
 from parser import TsukiParser
 
+import error
+
 class TsukiInterp(Interpreter):
     def __init__(self):
         super().__init__()
@@ -10,6 +12,11 @@ class TsukiInterp(Interpreter):
         self.parser = TsukiParser()
         self.transformer = TsukiTransform()
         self.globals = {}
+
+        self.builtin = {}
+
+    def load_builtins(self):
+        self.builtin['echo'] = lambda x: print(x)
 
     def run(self, program):
         tree = self.parser.parse(program)
@@ -30,9 +37,30 @@ class TsukiInterp(Interpreter):
         else:
             self.globals[name] = val
 
-        print(self.globals)
+    def func_call(self, tree):
+        name = tree.children[0]
+        params = []
+
+        if len(tree.children) > 1:
+            for child in tree.children:
+                if type(child) != str:
+                    param = child.children[0]
+                    if param in self.globals:
+                        param = self.globals[param]
+                    
+                    params.append(param)
+        
+        # Lookup the function in builtin
+        if name in self.builtin:
+            if len(params) > 0:
+                self.builtin[name](*params)
+            else:
+                self.builtin[name]()
+        else:
+            raise error.BuiltinNotFound(name)
 
 interp = TsukiInterp()
 
 # Test the interpretor out
-interp.run(open('examples/variables.tsu', 'r').read())
+interp.load_builtins()
+interp.run(open('examples/manesix.tsu', 'r').read())

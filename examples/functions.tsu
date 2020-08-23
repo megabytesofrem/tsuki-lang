@@ -1,0 +1,5 @@
+-- Square a number
+func square(n)
+    sqr = n * n
+    return sqr
+end

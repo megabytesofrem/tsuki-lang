@@ -20,3 +20,11 @@ class TsukiTransform(Transformer):
         
     def array(self, args):
         return list(args)
+
+    def table(self, args):
+        tbl = {}
+        for i in args:
+            (k, v) = i.children
+            tbl[k] = v
+
+        return tbl

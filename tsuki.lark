@@ -1,21 +1,30 @@
 // Grammar for Tsuki
-start: var_assign*
+start: statement*
 
-// Data types. Tsuki supports strings, numbers, and arrays
-value: array
+value: table
+     | array
      | identifier
      | string
      | number
 
+
+// Data types
 identifier: WORD -> identifier
 number: SIGNED_NUMBER
 string: ESCAPED_STRING
-
 array: "[" [value ("," value)*] "]"
+table: "{" [table_entry ("," table_entry)*] "}"
+table_entry: string "->" value
+
+// Variables
 var_assign: identifier "=" value
 
+// Function calls
 func_param: value
 func_call: identifier "(" [func_param ("," func_param)*] ")"
+
+statement: var_assign 
+          | func_call
 
 COMMENT: "--" /[^\n]/*
 
