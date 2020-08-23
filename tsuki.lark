@@ -7,24 +7,57 @@ value: table
      | string
      | number
 
+statement                : if_statement
+                         | var_assign 
+                         | func_call
+                         | expr
 
 // Data types
-identifier: WORD -> identifier
-number: SIGNED_NUMBER
-string: ESCAPED_STRING
-array: "[" [value ("," value)*] "]"
-table: "{" [table_entry ("," table_entry)*] "}"
-table_entry: string "->" value
+identifier               : WORD -> identifier
+number                   : SIGNED_NUMBER
+string                   : ESCAPED_STRING
+array                    : "[" [value ("," value)*] "]"
+table                    : "{" [table_entry ("," table_entry)*] "}"
+table_entry              : string "->" value
 
 // Variables
-var_assign: identifier "=" value
+var_assign               : identifier "=" value
+
+// If statements
+if_statement             : "if" expr "then" statement* "end"
+
+// Expressions
+expr                     : logical
+
+?logical                 : comparison
+                         | logical "and" comparison  -> logical_and
+                         | logical "or"  comparison  -> logical_or
+
+?comparison              : sum
+                         | comparison "<"  sum    -> comp_l
+                         | comparison ">"  sum    -> comp_g
+                         | comparison "<=" sum    -> comp_le
+                         | comparison ">=" sum    -> comp_ge
+                         | comparison "==" sum    -> comp_eq
+                         | comparison "~=" sum    -> comp_neq
+
+
+?sum                     : product
+                         | sum "+" product        -> add
+                         | sum "-" product        -> sub
+
+?product                 : item
+                         | product "*" item       -> mul
+                         | product "/" item       -> div
+
+?item                    : value
+                         | "-" item               -> neg
+                         | "not" item             -> logical_not
+
 
 // Function calls
 func_param: value
 func_call: identifier "(" [func_param ("," func_param)*] ")"
-
-statement: var_assign 
-          | func_call
 
 COMMENT: "--" /[^\n]/*
 

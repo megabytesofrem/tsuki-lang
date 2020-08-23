@@ -3,6 +3,9 @@ from lark.visitors import Interpreter
 from transform import TsukiTransform
 from parser import TsukiParser
 
+from nodes.expression import Expression
+from nodes.func_call import FuncCall
+
 import error
 
 class TsukiInterp(Interpreter):
@@ -10,6 +13,7 @@ class TsukiInterp(Interpreter):
         super().__init__()
 
         self.parser = TsukiParser()
+        self.compare_success = False
         self.transformer = TsukiTransform()
         self.globals = {}
 
@@ -37,18 +41,43 @@ class TsukiInterp(Interpreter):
         else:
             self.globals[name] = val
 
+    def statement(self, tree):
+        for child in tree.children:
+            if child.data == 'if_statement':
+                # The next child should be the comparison
+                comparison = child.children[0]
+                block = child.children[1:]
+
+                (lvalue, rvalue) = comparison.values
+                if comparison.kind == 'comp_eq':
+                    if lvalue == rvalue:
+                        self.compare_success = True
+                    else:
+                        self.compare_success = False
+                elif comparison.kind == 'comp_neq':
+                    if lvalue != rvalue:
+                        self.compare_success = True
+                    else:
+                        self.compare_success = False
+                
+                if self.compare_success:
+                    # Run the block only if the comparison was successful
+                    for b in block:
+                        children = self.visit_children(b)
+                        for child in children:
+                            if type(child) == FuncCall:
+                                self.func_call(b)
+
     def func_call(self, tree):
-        name = tree.children[0]
+        node = tree.children[0]
+        name = node.name
         params = []
 
-        if len(tree.children) > 1:
-            for child in tree.children:
-                if type(child) != str:
-                    param = child.children[0]
-                    if param in self.globals:
-                        param = self.globals[param]
+        for param in node.params:
+            if param in self.globals:
+                param = self.globals[param]
                     
-                    params.append(param)
+            params.append(param)
         
         # Lookup the function in builtin
         if name in self.builtin:
@@ -63,4 +92,4 @@ interp = TsukiInterp()
 
 # Test the interpretor out
 interp.load_builtins()
-interp.run(open('examples/manesix.tsu', 'r').read())
+interp.run(open('examples/expr.tsu', 'r').read())

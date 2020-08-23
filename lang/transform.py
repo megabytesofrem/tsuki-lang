@@ -1,4 +1,7 @@
-from lark import Transformer
+from lark import Transformer, Tree
+
+from nodes.expression import Expression
+from nodes.func_call import FuncCall
 
 class TsukiTransform(Transformer):
     # Atoms
@@ -28,3 +31,23 @@ class TsukiTransform(Transformer):
             tbl[k] = v
 
         return tbl
+
+    def func_call(self, args):
+        name = args[0]
+        params = []
+
+        for child in args[1:]:
+            if type(child) == Tree:
+                params.append(child.children[0])
+
+        return FuncCall(name, params)
+
+    def expr(self, args):
+        kind = ''
+        values = []
+        for i in args:
+            if type(i) == Tree:
+                kind = str(i.data)
+                values = list(i.children)
+
+        return Expression(kind, values)
