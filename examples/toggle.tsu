@@ -1,0 +1,13 @@
+-- examples/toggle.tsu
+lights = "off"
+
+-- Toggle from off to on
+if lights == "off" then 
+    echo("The lights were off, turning them on!")
+    lights = "on"
+end
+
+if lights == "on" then 
+    echo("The lights were on, turning them off before going downstairs!")
+    lights = "off"
+end

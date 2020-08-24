@@ -1,3 +1,4 @@
+import sys
 from lark.visitors import Interpreter, visit_children_decor
 
 from transform import TsukiTransform
@@ -21,8 +22,7 @@ class TsukiInterp(Interpreter):
         self.builtin = {}
 
     def load_builtins(self):
-        self.builtin['echo'] = lambda x: print(x, end=' ')
-        self.builtin['add']  = lambda x, y: print(x + y)
+        self.builtin['echo'] = lambda x: print(x)
 
     def run(self, program):
         tree = self.parser.parse(program)
@@ -31,14 +31,38 @@ class TsukiInterp(Interpreter):
         tree = self.transformer.transform(tree)
         self.visit(tree)
 
+    def compare(self, kind, a, b):
+        # Compare a and b and return the result
+
+        result = True
+        if kind == 'comp_eq':
+            if a != b:
+                result = False
+        elif kind == 'comp_neq':
+            if a == b:
+                result = False
+        elif kind == 'comp_l':
+            if a > b:
+                result = False
+        elif kind == 'comp_g':
+            if a < b:
+                result = False
+        elif kind == 'comp_le':
+            if a >= b:
+                result = False
+        elif kind == 'comp_ge':
+            if a <= b:
+                result = False
+        
+        return result
+
     def var_assign(self, tree):
         # All variables are global in Tsuki, since it is very simple
-        node = tree.children[0]
+        node = tree
         name = node.name
         val = node.value
 
-        # Looks complicated but if the "value" is actually a variable,
-        # then use the value of the variable that it corresponds to
+        # Resolve any variables
         if str(val) in self.globals:
             self.globals[name] = self.globals[val]
         else:
@@ -46,10 +70,9 @@ class TsukiInterp(Interpreter):
 
     def statement(self, tree):
         for child in tree.children:
-            if type(child) == IfStatement:
+            if isinstance(child, IfStatement):
                 condition = child.condition
                 block = child.if_block
-
                 (a, b) = condition.values
 
                 # Substitute variables if they are used in the condition
@@ -58,32 +81,24 @@ class TsukiInterp(Interpreter):
                 if b in self.globals:
                     b = self.globals[b]
 
-                if condition.kind == 'comp_eq':
-                    if a != b: 
-                        self.running = False
+                result = self.compare(condition.kind, a, b)
+                if result != True:
+                    self.running = False
+                else:
                     self.running = True
-                elif condition.kind == 'comp_neq':
-                    if a == b: 
-                        self.running = False
-                    self.running = True
-                
-                #print(condition, block, a, b)
 
                 if self.running:
                     # Evaluate each statement in the block
-                    self.visit_block(block)
+                    for statement in block:
+                        self.visit_children(statement)
 
-    def visit_block(self, block):
-        for statement in block:
-            for child in statement.children:
-                if isinstance(child, FuncCall):
-                    self.func_call(statement)
-                elif isinstance(child, VarAssign):
-                    self.var_assign(statement)
+            elif isinstance(child, VarAssign):
+                self.var_assign(child)
+            elif isinstance(child, FuncCall):
+                self.func_call(child)
 
     def func_call(self, tree):
-        node = tree.children[0]
-
+        node = tree
         name = node.name
         params = []
 
@@ -100,11 +115,15 @@ class TsukiInterp(Interpreter):
             else:
                 self.builtin[name]()
         else:
+            # When functions are added, we should check upon not finding
+            # a valid builtin and replace this with a print to stderr instead
             raise error.BuiltinNotFound(name)
         
 
 interp = TsukiInterp()
 
-# Test the interpretor out
+# Test the interpretor out with some scripts
 interp.load_builtins()
-interp.run(open('examples/expr.tsu', 'r').read())
+interp.run(open('examples/manesix.tsu', 'r').read())
+interp.run(open('examples/password.tsu', 'r').read())
+interp.run(open('examples/toggle.tsu', 'r').read())

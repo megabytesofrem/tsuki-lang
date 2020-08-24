@@ -1,5 +1,6 @@
 // Grammar for Tsuki
-start: statement*
+start                    : block+
+block                    : statement*
 
 value                    : table
                          | array
@@ -24,8 +25,14 @@ table_entry              : string "->" value
 var_assign               : identifier "=" value
 
 // If statements
-if_statement             : "if" expr "then" statement* else_statement? "end"
-else_statement           : "else" "then" statement*
+if_statement             : "if" expr "then" block* else_statement? "end"
+else_statement           : "else" "then" block*
+
+// Loops
+iterables                : array
+                         | table
+
+for_loop                 : "for" identifier ":" iterables "do" block* "end"
 
 // Expressions
 expr                     : logical

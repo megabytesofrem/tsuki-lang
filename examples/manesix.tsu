@@ -1,3 +1,5 @@
+-- examples/manesix.tsu
+
 -- manesix is an array of strings, which maps to a python list()
 manesix = ["Twilight", "Rarity", "Fluttershy", "Applejack", "Pinkie Pie", "Spike"]
 ponies = {
