@@ -12,3 +12,9 @@ class IfStatement(Statement):
         self.condition = condition
         self.if_block = if_block
         self.else_block = else_block
+
+class ForLoop(Statement):
+    def __init__(self, iterator, iterable, block):
+        self.iterator = iterator
+        self.iterable = iterable
+        self.block = block

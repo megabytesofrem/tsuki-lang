@@ -6,7 +6,7 @@ from parser import TsukiParser
 
 from nodes.expression import Expression
 from nodes.func_call import FuncCall
-from nodes.statement import IfStatement, VarAssign
+from nodes.statement import IfStatement, VarAssign, ForLoop
 
 import error
 
@@ -30,6 +30,10 @@ class TsukiInterp(Interpreter):
         # Transform the tree
         tree = self.transformer.transform(tree)
         self.visit(tree)
+
+        # FIXME: Sometimes the tree doesn't get transformed
+        # properly and causes the code to fail to run, not sure why.
+        print(tree)
 
     def compare(self, kind, a, b):
         # Compare a and b and return the result
@@ -56,74 +60,91 @@ class TsukiInterp(Interpreter):
         
         return result
 
-    def var_assign(self, tree):
-        # All variables are global in Tsuki, since it is very simple
-        node = tree
-        name = node.name
-        val = node.value
+    # def var_assign(self, tree):
+    #     # All variables are global in Tsuki, since it is very simple
+    #     node = tree
+    #     name = node.name
+    #     val = node.value
 
-        # Resolve any variables
-        if str(val) in self.globals:
-            self.globals[name] = self.globals[val]
-        else:
-            self.globals[name] = val
+    #     # Resolve any variables
+    #     if str(val) in self.globals:
+    #         self.globals[name] = self.globals[val]
+    #     else:
+    #         self.globals[name] = val
 
     def statement(self, tree):
         for child in tree.children:
-            if isinstance(child, IfStatement):
-                condition = child.condition
-                block = child.if_block
-                (a, b) = condition.values
-
-                # Substitute variables if they are used in the condition
-                if a in self.globals:
-                    a = self.globals[a]
-                if b in self.globals:
-                    b = self.globals[b]
-
-                result = self.compare(condition.kind, a, b)
-                if result != True:
-                    self.running = False
-                else:
-                    self.running = True
-
-                if self.running:
-                    # Evaluate each statement in the block
-                    for statement in block:
-                        self.visit_children(statement)
-
-            elif isinstance(child, VarAssign):
-                self.var_assign(child)
+            if isinstance(child, VarAssign):
+                #self.var_assign(child)
+                pass
             elif isinstance(child, FuncCall):
-                self.func_call(child)
+                #self.func_call(child)
+                pass
+            elif isinstance(child, IfStatement):
+                # condition = child.condition
+                # block = child.if_block
+                # (a, b) = condition.values
 
-    def func_call(self, tree):
-        node = tree
-        name = node.name
-        params = []
+                # # Substitute variables if they are used in the condition
+                # if a in self.globals:
+                #     a = self.globals[a]
+                # if b in self.globals:
+                #     b = self.globals[b]
 
-        for param in node.params:
-            if param in self.globals:
-                param = self.globals[param]
+                # result = self.compare(condition.kind, a, b)
+                # if result != True:
+                #     self.running = False
+                # else:
+                #     self.running = True
+
+                # if self.running:
+                #     # Evaluate each statement in the block
+                #     for statement in block:
+                #         self.visit(statement)
+                pass
+            # elif isinstance(child, ForLoop):
+            #     iterable = child.iterable.children[0]
+            #     block = child.block
+
+            #     if isinstance(iterable, str):
+            #         # Get from the global variables
+            #         if iterable in self.globals:
+            #             iterable = self.globals[iterable]
+            #         else:
+            #             iterable = []
+
+            #     for iterator in iterable:
+            #         for statement in block:
+            #             self.visit(statement)
+
+    # def func_call(self, tree):
+    #     node = tree
+    #     name = node.name
+    #     params = []
+
+    #     for param in node.params:
+    #         if param in self.globals:
+    #             param = self.globals[param]
                     
-            params.append(param)
+    #         params.append(param)
         
-        # Lookup the function in builtin
-        if name in self.builtin:
-            if len(params) > 0:
-                self.builtin[name](*params)
-            else:
-                self.builtin[name]()
-        else:
-            # When functions are added, we should check upon not finding
-            # a valid builtin and replace this with a print to stderr instead
-            raise error.BuiltinNotFound(name)
+    #     # Lookup the function in builtin
+    #     if name in self.builtin:
+    #         if len(params) > 0:
+    #             self.builtin[name](*params)
+    #         else:
+    #             self.builtin[name]()
+    #     else:
+    #         # When functions are added, we should check upon not finding
+    #         # a valid builtin and replace this with a print to stderr instead
+    #         raise error.BuiltinNotFound(name)
         
 
 interp = TsukiInterp()
 
 # Test the interpretor out with some scripts
 interp.load_builtins()
-interp.run(open('examples/manesix.tsu', 'r').read())
-interp.run(open('examples/password.tsu', 'r').read())
-interp.run(open('examples/toggle.tsu', 'r').read())
+# interp.run(open('examples/manesix.tsu', 'r').read())
+# interp.run(open('examples/password.tsu', 'r').read())
+interp.run(open('examples/one.tsu', 'r').read())
+#interp.run(open('examples/loops.tsu', 'r').read())

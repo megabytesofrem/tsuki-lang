@@ -1,4 +1,4 @@
 numbers = [1, 2, 3, 4]
-for number : numbers do
-
+for number of numbers do
+    echo("hello")
 end

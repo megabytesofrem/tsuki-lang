@@ -2,7 +2,7 @@ from lark import Transformer, Tree
 
 from nodes.expression import Expression
 from nodes.func_call import FuncCall
-from nodes.statement import IfStatement, VarAssign
+from nodes.statement import IfStatement, VarAssign, ForLoop
 
 class TsukiTransform(Transformer):
     # Atoms
@@ -49,15 +49,29 @@ class TsukiTransform(Transformer):
         for i in args:
             if type(i) == Tree:
                 kind = str(i.data)
-                values = list(i.children)
+                
+                for child in i.children:
+                    print(child)
+                    if child != None:
+                        values.append(child)
 
+        print(values)
         return Expression(kind, values)
 
-    def var_assign(self, args):
-        name = args[0]
-        value = args[1]
+    def statement(self, args):
+        # or maybe this fucks up??? I DONT KNOW
+        print('STMT', args)
+        return args
 
-        return VarAssign(name, value)
+    # def var_assign(self, args):
+    #     name = args[0]
+    #     value = args[1]
+
+    #     print(name, value)
+
+    #     # this fucks up for some reason randomly
+    #     #return (name, value)
+    #     return VarAssign(name, value)
 
     def if_statement(self, args):
         condition = args[0]
@@ -66,4 +80,14 @@ class TsukiTransform(Transformer):
         for statement in args[1:]:
             if_block.append(statement)
                 
-        return IfStatement(condition, if_block)
+        #return IfStatement(condition, if_block)
+
+    # def for_loop(self, args):
+    #     iterator = args[0]
+    #     iterable = args[1]
+    #     block = []
+
+    #     for statement in args[1:]:
+    #         block.append(statement)
+
+    #     return ForLoop(iterator, iterable, block)

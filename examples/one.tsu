@@ -1,0 +1,6 @@
+a = 2
+b = 2
+
+if a == 2 then do
+    c = 2
+end
